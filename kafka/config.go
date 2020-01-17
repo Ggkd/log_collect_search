@@ -10,10 +10,9 @@ type Config struct {
 }
 
 type Kafka struct {
-	Ip 		string 		`ini:"ip"`
-	Port 	string		`ini:"port"`
-	Topic	string		`ini:"topic"`
-	MaxCap	int			`ini:"max_cap"`
+	Ip 			string 		`ini:"ip"`
+	Port 		string		`ini:"port"`
+	ChanSize	int			`ini:"chanSize"`
 }
 
 func LoadConfig() *Config {

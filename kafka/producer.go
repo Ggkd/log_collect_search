@@ -1,22 +1,28 @@
 package kafka
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/Ggkd/log_collect/etcd"
 	"github.com/Shopify/sarama"
 	"time"
 )
 
 var ProductChan chan string
 
+// 从taillog获取到的日志 发往消息通道
 func SendToChan(msg string)  {
 	ProductChan <- msg
 }
 
-func SendMsg(producer sarama.SyncProducer , topic string)  {
+// 从通道获取消息并生产
+func SendMsg(producer sarama.SyncProducer , value string)  {
 	defer producer.Close()
+	var putValue = new(etcd.PutValue)
+	json.Unmarshal([]byte(value), putValue)
 	//构造消息
 	message := &sarama.ProducerMessage{}
-	message.Topic = topic
+	message.Topic = putValue.Topic
 	for {
 		select {
 		case msg := <- ProductChan:
@@ -33,6 +39,7 @@ func SendMsg(producer sarama.SyncProducer , topic string)  {
 	}
 }
 
+//初始化生产者
 func InitProducer(conf *Config) sarama.SyncProducer {
 	config := sarama.NewConfig()
 	config.Producer.RequiredAcks = sarama.WaitForAll
@@ -46,7 +53,7 @@ func InitProducer(conf *Config) sarama.SyncProducer {
 		return nil
 	}
 	// 初始化ConsumeChan
-	ProductChan = make(chan string, conf.MaxCap)
+	ProductChan = make(chan string, conf.ChanSize)
 	fmt.Println("===init kafka producer success===")
 	return producer
 }

@@ -1,14 +1,18 @@
 package kafka
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/Ggkd/log_collect/etcd"
 	"github.com/Shopify/sarama"
 	"sync"
 )
 
 
-func Consume(consumer sarama.Consumer, topic string)  {
-	partitionList, err := consumer.Partitions(topic)		//根据topic找到所有的分区
+func Consume(consumer sarama.Consumer, value string)  {
+	var putValue = new(etcd.PutValue)
+	json.Unmarshal([]byte(value), putValue)
+	partitionList, err := consumer.Partitions(putValue.Topic)		//根据topic找到所有的分区
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -16,7 +20,7 @@ func Consume(consumer sarama.Consumer, topic string)  {
 	//遍历所有的分区
 	wg := sync.WaitGroup{}
 	for _, partition := range partitionList {
-		pc, err := consumer.ConsumePartition(topic, partition, sarama.OffsetNewest)
+		pc, err := consumer.ConsumePartition(putValue.Topic, partition, sarama.OffsetNewest)
 		if err != nil {
 			fmt.Println(err)
 		}

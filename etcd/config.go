@@ -12,8 +12,9 @@ type Etcd struct {
 	Ip 			string		`ini:"ip"`
 	Port 		string		`ini:"port"`
 	DialTimeout	int			`ini:"DialTimeout"`
-	Key			string		`ini:"key"`
+	Key			string		`ini:"key"`			// etcd日志配置的key
 	ChanSize	int			`ini:"chanSize"`
+	TaskNum		int			`ini:"taskNum"`		// 日志任务数量
 }
 
 var EtcdConfig = new(Config)

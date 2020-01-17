@@ -15,13 +15,13 @@ type Kafka struct {
 	ChanSize	int			`ini:"chanSize"`
 }
 
-func LoadConfig() *Config {
-	config := new(Config)
-	err := ini.MapTo(config, "./config/conf.ini")
+var KafkaConfig = new(Config)
+
+func LoadConfig() {
+	err := ini.MapTo(KafkaConfig, "./config/conf.ini")
 	if err != nil {
 		fmt.Println("ini config err:", err)
-		return nil
+		return
 	}
 	fmt.Println("====load kafka config success====")
-	return config
 }

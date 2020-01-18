@@ -6,9 +6,6 @@ import (
 	"github.com/Ggkd/log_collect/taillog"
 )
 
-var (
-	kafkaConfig		*kafka.Config
-)
 
 func main() {
 	// 初始化etcd
@@ -21,13 +18,17 @@ func main() {
 	kafka.InitConsumer()
 
 	// 初始化kafka生产者
-	kafka.InitProducer(kafkaConfig)
+	kafka.InitProducer()
 
 	// 从etcd获取日志收集的path 和 kafka的topic
-	LogConf := etcd.GetConf(etcd.EtcdConfig.Key)
+	LogConf := etcd.GetConf()
 
 	// 开启任务
-	taillog.Start(LogConf)
+	taillog.Init(LogConf)
+
+	// etcd Watch
+	newConfChan := taillog.PushConfToChan()
+	go etcd.WatchConf(newConfChan)
 
 
 

@@ -4,27 +4,26 @@ import (
 	"fmt"
 	"github.com/Shopify/sarama"
 	"sync"
-	"time"
 )
 
 var (
-	TopicChan chan string		//topic通道
-	Consumer sarama.Consumer	// 全局消费者
+	Consumer  sarama.Consumer 		// 全局消费者
+	Topics	  map[string]string		 // 存储已发现的topic
 )
 
-func Consume()  {
+// 开始消费数据
+func Consume(topic string) {
+	defer Consumer.Close()
 	for {
-		select {
-		case TopicChan := <- TopicChan:
-			partitionList, err := Consumer.Partitions(TopicChan)		//根据topic找到所有的分区
-			if err != nil {
-				fmt.Println(err)
-				return
-			}
-			//遍历所有的分区
+		partitionList, err := Consumer.Partitions(topic) //根据topic找到所有的分区
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		//遍历所有的分区
 			wg := sync.WaitGroup{}
 			for _, partition := range partitionList {
-				pc, err := Consumer.ConsumePartition(TopicChan, partition, sarama.OffsetNewest)
+				pc, err := Consumer.ConsumePartition(topic, partition, sarama.OffsetNewest)
 				if err != nil {
 					fmt.Println(err)
 				}
@@ -32,34 +31,36 @@ func Consume()  {
 				//异步的消费数据
 				wg.Add(1)
 				go func(partitionConsumer sarama.PartitionConsumer) {
-					for msg := range partitionConsumer.Messages(){
-						fmt.Printf("topic:%s,  partiotion:%v, offset:%v, value:%s\n", msg.Topic, msg.Partition, msg.Offset, msg.Value)
+					defer wg.Done()
+					for msg := range partitionConsumer.Messages() {
+						fmt.Printf("consumer :topic:%s,  partiotion:%v, offset:%v, value:%s\n", msg.Topic, msg.Partition, msg.Offset, msg.Value)
 					}
-					wg.Done()
 				}(pc)
 			}
 			wg.Wait()
-		default:
-			time.Sleep(time.Microsecond)
-		}
 	}
 
 }
 
+// 初始化消费者
 func InitConsumer() {
 	var err error
-	config := sarama.NewConfig()
+	//config := sarama.NewConfig()
 	address := KafkaConfig.Ip + ":" + KafkaConfig.Port
-	Consumer, err = sarama.NewConsumer([]string{address}, config)
+	Consumer, err = sarama.NewConsumer([]string{address}, nil)
 	if err != nil {
 		fmt.Println("new consumer err: ", err)
 		return
 	}
-	TopicChan = make(chan string, KafkaConfig.ChanSize)
+	Topics = make(map[string]string, KafkaConfig.ChanSize)
 	fmt.Println("===init kafka consumer success===")
-	go Consume()
 }
 
-func SendToConsumeChan(topic string)  {
-	TopicChan <- topic
+// 接收最新的消费topic
+func SendToConsumeChan(topic string) {
+	_, ok := Topics[topic]
+	if !ok {
+		go Consume(topic)
+		Topics[topic] = topic
+	}
 }

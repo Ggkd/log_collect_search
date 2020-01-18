@@ -12,7 +12,6 @@ type LogData struct {
 }
 
 var ProductChan chan *LogData	// 存放每条任务的chan
-
 var Producer sarama.SyncProducer	// 全局生产者
 
 // 从通道获取消息并生产
@@ -37,7 +36,7 @@ func SendMsg()  {
 }
 
 //初始化生产者
-func InitProducer(conf *Config) {
+func InitProducer() {
 	var err error
 	config := sarama.NewConfig()
 	config.Producer.RequiredAcks = sarama.WaitForAll
@@ -51,7 +50,7 @@ func InitProducer(conf *Config) {
 		return
 	}
 	// 初始化ConsumeChan
-	ProductChan = make(chan *LogData, conf.ChanSize)
+	ProductChan = make(chan *LogData, KafkaConfig.ChanSize)
 	fmt.Println("===init kafka producer success===")
 	// 在后台发送数据
 	go SendMsg()

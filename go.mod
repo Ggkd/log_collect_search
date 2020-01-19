@@ -22,6 +22,8 @@ require (
 	github.com/hpcloud/tail v1.0.0
 	github.com/jonboulle/clockwork v0.1.0 // indirect
 	github.com/json-iterator/go v1.1.9 // indirect
+	github.com/mailru/easyjson v0.7.0 // indirect
+	github.com/olivere/elastic v6.2.27+incompatible
 	github.com/prometheus/client_golang v1.3.0 // indirect
 	github.com/smartystreets/goconvey v1.6.4 // indirect
 	github.com/soheilhy/cmux v0.1.4 // indirect

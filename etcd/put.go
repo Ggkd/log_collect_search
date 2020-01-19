@@ -14,7 +14,7 @@ func Put2(Client *clientv3.Client)  {
 	defer Client.Close()
 	ctx,cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	_, err := Client.Put(ctx, "log_path", `[{"path":"/Users/gongjiabao/Documents/gitdemo/log_collect/test_log/mysql.log","topic":"mysql_log"}]`)
+	_, err := Client.Put(ctx, "collect_log", `[{"path":"/Users/gongjiabao/Documents/gitdemo/log_collect/test_log/mysql.log","topic":"mysql_log"}]`)
 	if err != nil {
 		fmt.Printf("put %s err: %v\n", "log_path", err)
 		return
@@ -27,7 +27,7 @@ func Put1(Client *clientv3.Client)  {
 	defer Client.Close()
 	ctx,cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	_, err := Client.Put(ctx, "log_path", `[{"path":"/Users/gongjiabao/Documents/gitdemo/log_collect/test_log/web.log","topic":"web_log"}]`)
+	_, err := Client.Put(ctx, "collect_log", `[{"path":"/Users/gongjiabao/Documents/gitdemo/log_collect/test_log/web.log","topic":"web_log"}]`)
 	if err != nil {
 		fmt.Printf("put %s err: %v\n", "log_path", err)
 		return

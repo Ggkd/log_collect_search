@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/coreos/etcd/clientv3"
+	"github.com/coreos/etcd/mvcc/mvccpb"
 	"time"
 )
 
@@ -24,7 +25,7 @@ func Init()  {
 		fmt.Println("load etcd config err :", err)
 		return
 	}
-	fmt.Println("===load etcd config  success===")
+	fmt.Println("===load etcd config success===")
 	endpoints := EtcdConfig.Etcd.Ip + ":" + EtcdConfig.Etcd.Port
 	Client, err = clientv3.New(clientv3.Config{
 		Endpoints:[]string{endpoints},
@@ -63,12 +64,15 @@ func WatchConf(newConfChan chan <- []*LogEntry)  {
 		for event := range watchChan {
 			for _, ev := range event.Events {
 				var newConf []*LogEntry
-				err := json.Unmarshal(ev.Kv.Value, &newConf)
-				if err != nil {
-					fmt.Println("unmarshal err : ", err)
-					return
+				if ev.Type != mvccpb.DELETE {
+					// 判断是否为删除事件
+					err := json.Unmarshal(ev.Kv.Value, &newConf)
+					if err != nil {
+						fmt.Println("unmarshal err : ", err)
+						return
+					}
+					newConfChan <- newConf
 				}
-				newConfChan <- newConf
 			}
 		}
 	}

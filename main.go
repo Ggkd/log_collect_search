@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/Ggkd/log_collect/es"
 	"github.com/Ggkd/log_collect/etcd"
 	"github.com/Ggkd/log_collect/kafka"
 	"github.com/Ggkd/log_collect/taillog"
@@ -10,6 +11,12 @@ import (
 func main() {
 	// 初始化etcd
 	etcd.Init()
+
+	// 加载es的配置
+	es.LoadEsConfig()
+
+	// 初始化es
+	es.Init()
 
 	// 加载kafka的配置
 	kafka.LoadConfig()

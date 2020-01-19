@@ -2,6 +2,8 @@ package kafka
 
 import (
 	"fmt"
+	"github.com/Ggkd/log_collect/es"
+	"github.com/Ggkd/log_collect/etcd"
 	"github.com/Shopify/sarama"
 	"sync"
 )
@@ -33,19 +35,20 @@ func Consume(topic string) {
 				go func(partitionConsumer sarama.PartitionConsumer) {
 					defer wg.Done()
 					for msg := range partitionConsumer.Messages() {
-						fmt.Printf("consumer :topic:%s,  partiotion:%v, offset:%v, value:%s\n", msg.Topic, msg.Partition, msg.Offset, msg.Value)
+						//fmt.Printf("consumer :topic:%s,  partiotion:%v, offset:%v, value:%s\n", msg.Topic, msg.Partition, msg.Offset, msg.Value)
+						// 将数据发往es的通道
+						logData := es.EsDataStruct{Msg:string(msg.Value)}
+						es.SendToEsChan(msg.Topic, etcd.EtcdConfig.Key, logData)
 					}
 				}(pc)
 			}
 			wg.Wait()
 	}
-
 }
 
 // 初始化消费者
 func InitConsumer() {
 	var err error
-	//config := sarama.NewConfig()
 	address := KafkaConfig.Ip + ":" + KafkaConfig.Port
 	Consumer, err = sarama.NewConsumer([]string{address}, nil)
 	if err != nil {

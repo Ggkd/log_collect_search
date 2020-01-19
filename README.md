@@ -12,3 +12,6 @@ kafka的消费者将会消费当前topic的数据，将数据发往es；
 es收到日志数据后，把数据写入存储，可通过kibana搜索查询数据;
 
 可使用Prometheus进行监控;
+
+
+生产和消费写在一起了，当然是可以分开的。公共部分是etcd，生产方：tail，kafka producer；消费方：kafka consumer，elastic_search;
